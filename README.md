@@ -6,7 +6,7 @@ Just a simple python program that reads a CSV containing dates, subscribers, and
 # Setup
 You'll want Python3 installed. Then in a terminal that can generate a GUI (This does not work in WSL, use PowerShell instead) you'll want to run:
 ```bash 
-python3 -m pip install $@ scipy numpy pandas sklearn matplotlib
+./pip.sh numpy pandas sklearn matplotlib
 ```
 
 Then, to run the program, simply run this command in your terminal:
