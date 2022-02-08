@@ -7,8 +7,19 @@ import matplotlib.pyplot as plt
 
 
 def __main__():
+    """Main entry point of the program"""
     data_csv_file = 'data.csv'
     [np_views, np_subs] = parseData(data_csv_file)
+    viewsRegression = runLinearRegression(np_views)
+    subsRegression = runLinearRegression(np_subs)
+    chartGrowthOfSubsAndViews(
+        np_views, viewsRegression, np_subs, subsRegression)
+
+
+def chartGrowthOfSubsAndViews(np_views, viewsRegression, np_subs, subsRegression):
+    """Reads the CSV into arrays
+    Plots the arrays and a linear regression
+    Shows the plots"""
     print(np_views)
     print(np_subs)
     daysToGraphForViews = generateXAxisArray(len(np_views))
@@ -16,20 +27,18 @@ def __main__():
 
     figure, axes = plt.subplots(2)
     figure.suptitle("Growth of YouTube Views and Subscribers Over Days")
-    regression = runLinearRegression(np_views)
-    graphLinearRegression(axes[0],
-                          daysToGraphForViews, np_views, regression.coef_, regression.intercept_, "Days", "Views")
-    print(f"f(y) = {regression.coef_}x + {regression.intercept_}")
 
-    regression = runLinearRegression(np_subs)
+    graphLinearRegression(axes[0],
+                          daysToGraphForViews, np_views, viewsRegression.coef_, viewsRegression.intercept_, "Days", "Views")
+
     graphLinearRegression(axes[1],
-                          daysToGraphForSubs, np_subs, regression.coef_, regression.intercept_, "Subs", "Views")
-    print(f"f(y) = {regression.coef_}x + {regression.intercept_}")
+                          daysToGraphForSubs, np_subs, subsRegression.coef_, subsRegression.intercept_, "Subs", "Views")
 
     plt.show()
 
 
 def parseData(data_csv_file):
+    """Reads the CSV into numpy arrays"""
     delimited_file = pd.read_csv(
         data_csv_file, usecols=[0, 1, 2, 3])
     np_views = np.array(delimited_file['Views'])
@@ -38,6 +47,7 @@ def parseData(data_csv_file):
 
 
 def runLinearRegression(dataToRegress):
+    """Generates a linear regression"""
     X = generateXAxisArray(len(dataToRegress))
     X = X.reshape(-1, 1)
     regression = LinearRegression().fit(X, dataToRegress)
@@ -45,6 +55,7 @@ def runLinearRegression(dataToRegress):
 
 
 def graphLinearRegression(axes, xAxis, yAxis1, coefficient, intercept, xLabel, yLabel):
+    """Graphs a linear regression"""
     yAxis2 = evaluateLinearRegression(coefficient,
                                       intercept,
                                       xAxis)
@@ -60,6 +71,7 @@ def graphLinearRegression(axes, xAxis, yAxis1, coefficient, intercept, xLabel, y
 
 
 def evaluateLinearRegression(coefficient, intercept, variable):
+    """Evaluates a point in the linear regression function"""
     return coefficient * variable + intercept
 
 
@@ -68,6 +80,7 @@ def runIntegrate(parseData):
 
 
 def generateXAxisArray(len):
+    """Generates an array of days of length n."""
     return np.arange(len)
 
 
