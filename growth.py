@@ -1,5 +1,4 @@
 import math
-from scipy import integrate
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression
@@ -15,11 +14,56 @@ def __main__():
     chartGrowthOfSubsAndViews(
         np_views, viewsRegression, np_subs, subsRegression)
 
+    daysToProject = daysLeftInYear()
+    currentViews = 398000
+    currentSubs = 5459
+    projectGrowthOfSubsAndViews(
+        viewsRegression,  subsRegression, daysToProject, currentViews, currentSubs)
+
+
+def daysLeftInYear():
+    """Returns the number of days left in the year"""
+    return 365 - int(pd.Timestamp.now().strftime("%j"))
+
+
+def projectGrowthOfSubsAndViews(viewsRegression, subsRegression, daysToProject, currentViews, currentSubs):
+    """Projects the growth of subs and views for the days specified."""
+    daysToGraphForViews = generateXAxisArray(daysToProject)
+    daysToGraphForSubs = generateXAxisArray(daysToProject)
+
+    projectedViews = evaluateLinearRegression(
+        viewsRegression.coef_, viewsRegression.intercept_, daysToGraphForViews)
+    projectedSubs = evaluateLinearRegression(
+        subsRegression.coef_, subsRegression.intercept_, daysToGraphForSubs)
+
+    cumulativeViews = predictViews(
+        daysToGraphForViews, projectedViews, currentViews)
+    cumulativeSubs = predictSubs(
+        daysToGraphForSubs, projectedSubs, currentSubs)
+
+    print(
+        f"End of year prediction is currently: {math.floor(cumulativeSubs)} subscribers and {math.floor(cumulativeViews)} views")
+
+
+def predictSubs(daysToGraphForSubs, projectedSubs, cumulativeSubs):
+    """Predicts the subs for the days specified."""
+    for i in range(len(projectedSubs)):
+        cumulativeSubs += projectedSubs[i]
+        print(f"[{daysToGraphForSubs[i]}] Subs Per Day: {projectedSubs[i]} | Cumulative Subs: {math.floor(cumulativeSubs)}")
+    return cumulativeSubs
+
+
+def predictViews(daysToGraphForViews, projectedViews, cumulativeViews):
+    """Predicts the views for the days specified."""
+    for i in range(len(projectedViews)):
+        cumulativeViews += projectedViews[i]
+        print(f"[{daysToGraphForViews[i]}] Views Per Day: {projectedViews[i]} | Cumulative Views {cumulativeViews}")
+    return cumulativeViews
+
 
 def chartGrowthOfSubsAndViews(np_views, viewsRegression, np_subs, subsRegression):
-    """Reads the CSV into arrays
-    Plots the arrays and a linear regression
-    Shows the plots"""
+    """Reads the CSV into arrays, then lots the arrays 
+        and a linear regression and shows the plots"""
     print(np_views)
     print(np_subs)
     daysToGraphForViews = generateXAxisArray(len(np_views))
@@ -73,10 +117,6 @@ def graphLinearRegression(axes, xAxis, yAxis1, coefficient, intercept, xLabel, y
 def evaluateLinearRegression(coefficient, intercept, variable):
     """Evaluates a point in the linear regression function"""
     return coefficient * variable + intercept
-
-
-def runIntegrate(parseData):
-    pass
 
 
 def generateXAxisArray(len):
