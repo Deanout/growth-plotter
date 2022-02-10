@@ -36,17 +36,32 @@ def projectGrowthOfSubsAndViews(viewsRegression, subsRegression, daysToProject, 
     projectedSubs = evaluateLinearRegression(
         subsRegression.coef_, subsRegression.intercept_, daysToGraphForSubs)
 
-    cumulativeViews = predictSubs(
-        daysToGraphForViews, projectedViews, currentViews, "Views")
-    cumulativeSubs = predictSubs(
-        daysToGraphForSubs, projectedSubs, currentSubs, "Subs")
+    # cumulativeViews = predictStats(
+    #     daysToGraphForViews, projectedViews, currentViews, "Views")
+    # cumulativeSubs = predictStats(
+    #     daysToGraphForSubs, projectedSubs, currentSubs, "Subs")
 
-    print(
-        f"End of year prediction is currently: {math.floor(cumulativeSubs)} subscribers and {math.floor(cumulativeViews)} views")
+    exportStatsToCSV(daysToGraphForViews, projectedViews,
+                     currentViews, "Views")
+    exportStatsToCSV(daysToGraphForSubs, projectedSubs,
+                     currentSubs, "Subs")
 
 
-def predictSubs(daysToGraphForSubs, projectedArray, cumulativeSum, stat):
-    f"""Predicts the stat for the days specified."""
+def exportStatsToCSV(daysToGraph, projected, cumulative, title):
+    """Exports the stats to a csv file by date"""
+    df = pd.DataFrame()
+    for i, dailyValue in enumerate(projected):
+        cumulative += dailyValue
+        row_df = pd.DataFrame({'Date': daysToGraph[i],
+                               f'{title} Per Day': dailyValue,
+                               f'Total {title}': cumulative}, index=[i])
+        df = pd.concat([df, row_df])
+    df.to_csv(f'{title}.csv', index=False)
+
+
+def predictStats(daysToGraphForSubs, projectedArray, cumulativeSum, stat):
+    f"""Predicts the stat for the days specified.
+        Exports these results to a csv file."""
     for i in range(len(projectedArray)):
         cumulativeSum += projectedArray[i]
         print(f"[{daysToGraphForSubs[i]}] {stat} Per Day: {projectedArray[i]} | Cumulative {stat}: {math.floor(cumulativeSum)}")
@@ -54,7 +69,7 @@ def predictSubs(daysToGraphForSubs, projectedArray, cumulativeSum, stat):
 
 
 def chartGrowthOfSubsAndViews(np_views, viewsRegression, np_subs, subsRegression):
-    """Reads the CSV into arrays, then lots the arrays 
+    """Reads the CSV into arrays, then lots the arrays
         and a linear regression and shows the plots"""
     daysToGraphForViews = generateXAxisArray(len(np_views))
     daysToGraphForSubs = generateXAxisArray(len(np_subs))
@@ -74,7 +89,7 @@ def chartGrowthOfSubsAndViews(np_views, viewsRegression, np_subs, subsRegression
 def parseData(data_csv_file):
     """Reads the CSV into numpy arrays"""
     delimited_file = pd.read_csv(
-        data_csv_file, usecols=[0, 1, 2, 3])
+        data_csv_file, usecols=[0, 1, 2])
     np_views = np.array(delimited_file['Views'])
     np_subs = np.array(delimited_file['Subscribers'])
     return [np_views, np_subs]
