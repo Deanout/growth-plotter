@@ -3,11 +3,14 @@ import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
+import os
+dirname = os.path.dirname(__file__)
 
 
 def __main__():
     """Main entry point of the program"""
-    data_csv_file = 'data.csv'
+    data_csv_file = os.path.join(dirname, 'data.csv')
+
     [np_views, np_subs] = parseData(data_csv_file)
     viewsRegression = runLinearRegression(np_views)
     subsRegression = runLinearRegression(np_subs)
